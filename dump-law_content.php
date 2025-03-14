@@ -1,8 +1,21 @@
 <?php
 
+// prepare year parapmeter
+$year_now = date('Y');
+$year_input = $_SERVER['argv'][1] ?? $year_now;
+
+if ($year_input > $year_now) {
+    echo "no data from the future";
+    exit;
+}
+
 //get all law_version_ids
-$law_file = 'data/law_version.jsonl';
-$f = fopen($law_file, 'r');
+$law_file = "data/law_version-{$year_input}.jsonl";
+$f = @fopen($law_file, 'r');
+if ($f === false) {
+    echo "{$law_file} not found. Run 'php dump-law_version.php' first.\n";
+    exit;
+}
 $law_version_ids = [];
 
 while (($line = fgets($f)) !== false) {
@@ -14,7 +27,7 @@ fclose($f);
 //query law_content by law_version
 $limit = 100;
 $law_content_show = new stdClass();
-$output = fopen(__DIR__ . "/data/law_content.jsonl", "w");
+$output = fopen(__DIR__ . "/data/law_content-{$year_input}.jsonl", "w");
 
 foreach ($law_version_ids as $law_version_id) {
     $page = 1;

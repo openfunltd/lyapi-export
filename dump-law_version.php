@@ -1,43 +1,42 @@
 <?php
 
-//get all law_ids
-$law_file = 'data/law.jsonl';
-$f = fopen($law_file, 'r');
-$law_ids = [];
+// prepare year, date parapmeter
+$year_now = date('Y');
+$date_now = date('Y-m-d');
+$year_input = $_SERVER['argv'][1] ?? $year_now;
 
-while (($line = fgets($f)) !== false) {
-   $law_data = json_decode($line); 
-   $law_ids[] = $law_data->法律編號;
+if ($year_input > $year_now) {
+    echo "no data from the future";
+    exit;
 }
-fclose($f);
+$date_end = "{$year_input}-12-31";
+$date_start = "{$year_input}-01-01";
 
-//query law_version by law_id
 $limit = 100;
 $law_version_show = new stdClass();
-$output = fopen(__DIR__ . "/data/law_version.jsonl", "w");
+$output = fopen(__DIR__ . "/data/law_version-{$year_input}.jsonl", "w");
 
-foreach ($law_ids as $law_id) {
-    $page = 1;
-    while (true) {
-        $url = sprintf("https://v2.ly.govapi.tw/law_versions?法律編號=%s&output_fields=*&limit=%d&page=%d",
-            $law_id,
-            $limit,
-            $page
-        );
-        error_log($url);
-        $ret = json_decode(file_get_contents($url));
-        $hit = 0;
-        foreach ($ret->lawversions as $law_version) {
-            if (property_exists($law_version_show, $law_version->版本編號)) {
-                continue;
-            }
-            $law_version_show->{$law_version->版本編號} = true;
-            fputs($output, json_encode($law_version, JSON_UNESCAPED_UNICODE) . "\n");
-            $hit ++;
+$page = 1;
+while (true) {
+    $url = sprintf("https://v2.ly.govapi.tw/law_versions?sort=日期<&日期:%s,%s&output_fields=*&limit=%d&page=%d",
+        $date_start,
+        $date_end,
+        $limit,
+        $page
+    );
+    error_log($url);
+    $ret = json_decode(file_get_contents($url));
+    $hit = 0;
+    foreach ($ret->lawversions as $law_version) {
+        if (property_exists($law_version_show, $law_version->版本編號)) {
+            continue;
         }
-        if (!$hit) {
-            break;
-        }
-        $page ++;
+        $law_version_show->{$law_version->版本編號} = true;
+        fputs($output, json_encode($law_version, JSON_UNESCAPED_UNICODE) . "\n");
+        $hit ++;
     }
+    if (!$hit) {
+        break;
+    }
+    $page ++;
 }
