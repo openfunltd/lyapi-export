@@ -1,6 +1,6 @@
 <?php
 
-$term = $_SERVER['argv'][1] ?? '10';
+$term = $_SERVER['argv'][1] ?? 11;
 $limit = 100;
 $page = 1;
 $meet_show = new stdClass();

@@ -1,6 +1,6 @@
 <?php
 
-$term = $_SERVER['argv'][1] ?? 10;
+$term = $_SERVER['argv'][1] ?? 11;
 $limit = 100;
 $bill_after = null;
 $bill_show = new stdClass();
