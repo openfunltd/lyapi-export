@@ -1,6 +1,9 @@
 term=11
 year=2025
 
+#default term=11(hardcode)
+php dump-legislator.php $term
+
 #default term=11(hardcoded)
 php dump-bill.php $term
 
